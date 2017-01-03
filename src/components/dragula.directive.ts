@@ -1,4 +1,4 @@
-import { Directive, Input, ElementRef, OnInit, OnChanges, SimpleChange } from '@angular/core';
+import { Directive, Input, ElementRef, OnInit, OnChanges, SimpleChange, NgZone } from '@angular/core';
 import { DragulaService } from './dragula.provider';
 import { dragula } from './dragula.class';
 
@@ -11,7 +11,7 @@ export class DragulaDirective implements OnInit, OnChanges {
 
   private el: ElementRef;
   private dragulaService: DragulaService;
-  public constructor(el: ElementRef, dragulaService: DragulaService) {
+  public constructor(el: ElementRef, dragulaService: DragulaService, private ngZone: NgZone) {
     this.el = el;
     this.dragulaService = dragulaService;
     this.container = el.nativeElement;
@@ -34,11 +34,14 @@ export class DragulaDirective implements OnInit, OnChanges {
       checkModel();
       this.drake.containers.push(this.container);
     } else {
-      this.drake = dragula({
-        containers: [this.container]
+      this.ngZone.runOutsideAngular(() => {
+        console.log('outside');
+        this.drake = dragula({
+          containers: [this.container]
+        });
+        checkModel();
+        this.dragulaService.add(this.dragula, this.drake);
       });
-      checkModel();
-      this.dragulaService.add(this.dragula, this.drake);
     }
   }
 
